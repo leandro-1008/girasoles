@@ -1,1290 +1,449 @@
-<!DOCTYPE html> 
-<html lang="en">
+<!--
+# Autor: Andrés Hincapie Ruiz (A.HRZ)
+# Fecha de creación: 24 de diciembre de 2024
+# Programa: Árbol de Navidad 3D Interactivo con Three.js
+-->
+
+<!DOCTYPE html> <!-- Declaro el tipo de documento como HTML5 -->
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunflower Garden with Shooting Stars</title>
+    <title>Árbol de Navidad 3D</title>
+    <!-- Defino los estilos básicos para el canvas -->
     <style>
-*,
-*::after,
-*::before {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --dark-color: #000;
-  --fl-speed: 0.8s;
-  --speed-leaf: 2s;
-}
-
-body {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: var(--dark-color);
-  overflow: hidden;
-  perspective: 1000px;
-}
-
-.night {
-  position: fixed;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 100%;
-  filter: blur(0.1vmin);
-  background-image: radial-gradient(
-      ellipse at top,
-      transparent 0%,
-      var(--dark-color)
-    ),
-    radial-gradient(
-      ellipse at bottom,
-      var(--dark-color),
-      rgba(145, 233, 255, 0.2)
-    ),
-    repeating-linear-gradient(
-      220deg,
-      rgb(0, 0, 0) 0px,
-      rgb(0, 0, 0) 19px,
-      transparent 19px,
-      transparent 22px
-    ),
-    repeating-linear-gradient(
-      189deg,
-      rgb(0, 0, 0) 0px,
-      rgb(0, 0, 0) 19px,
-      transparent 19px,
-      transparent 22px
-    ),
-    repeating-linear-gradient(
-      148deg,
-      rgb(0, 0, 0) 0px,
-      rgb(0, 0, 0) 19px,
-      transparent 19px,
-      transparent 22px
-    ),
-    linear-gradient(90deg, rgb(0, 255, 250), rgb(240, 240, 240));
-}
-
-.shooting-stars {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.shooting-star {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8);
-  opacity: 0;
-  animation: shootingStar 3s linear infinite;
-}
-
-.shooting-star::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
-  animation: shootingStarTail 3s linear infinite;
-}
-
-.shooting-star:nth-child(1) {
-  top: 5%;
-  left: -10%;
-  animation-delay: 0s;
-  animation-duration: 2.5s;
-}
-
-.shooting-star:nth-child(2) {
-  top: 15%;
-  left: -10%;
-  animation-delay: 2s;
-  animation-duration: 3s;
-}
-
-.shooting-star:nth-child(3) {
-  top: 25%;
-  left: -10%;
-  animation-delay: 4s;
-  animation-duration: 2.8s;
-}
-
-.shooting-star:nth-child(4) {
-  top: 0%;
-  left: -10%;
-  animation-delay: 6s;
-  animation-duration: 3.2s;
-}
-
-.shooting-star:nth-child(5) {
-  top: 35%;
-  left: -10%;
-  animation-delay: 8s;
-  animation-duration: 2.7s;
-}
-
-.shooting-star:nth-child(6) {
-  top: 8%;
-  left: -10%;
-  animation-delay: 10s;
-  animation-duration: 3.1s;
-}
-
-.shooting-star:nth-child(7) {
-  top: 45%;
-  left: -10%;
-  animation-delay: 12s;
-  animation-duration: 2.9s;
-}
-
-.shooting-star:nth-child(8) {
-  top: 3%;
-  left: -10%;
-  animation-delay: 14s;
-  animation-duration: 3.3s;
-}
-
-@keyframes shootingStar {
-  0% {
-    opacity: 0;
-    transform: translateX(0) translateY(0) rotate(45deg);
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(120vw) translateY(50vh) rotate(10deg);
-  }
-}
-
-@keyframes shootingStarTail {
-  0% {
-    width: 0;
-  }
-  30% {
-    width: 100px;
-  }
-  100% {
-    width: 0;
-  }
-}
-
-.flowers {
-  position: relative;
-  transform: scale(0.9);
-  z-index: 2;
-}
-
-.flower {
-  position: absolute;
-  bottom: 10vmin;
-  transform-origin: bottom center;
-  z-index: 50;
-}
-
-.flower--1 {
-  animation: moving-flower-1 4s linear infinite;
-}
-
-.flower--1 .flower__line {
-  height: 70vmin;
-  animation-delay: 0.3s;
-}
-
-.flower--1 .flower__line__leaf--1 {
-  animation: blooming-leaf-right var(--fl-speed) 1.6s backwards;
-}
-
-.flower--1 .flower__line__leaf--2 {
-  animation: blooming-leaf-right var(--fl-speed) 1.4s backwards;
-}
-
-.flower--1 .flower__line__leaf--3 {
-  animation: blooming-leaf-left var(--fl-speed) 1.2s backwards;
-}
-
-.flower--1 .flower__line__leaf--4 {
-  animation: blooming-leaf-left var(--fl-speed) 1s backwards;
-}
-
-.flower--2 {
-  left: 50%;
-  transform: rotate(20deg);
-  animation: moving-flower-2 4s linear infinite;
-}
-
-.flower--2 .flower__line {
-  height: 60vmin;
-  animation-delay: 0.6s;
-}
-
-.flower--2 .flower__line__leaf--1 {
-  animation: blooming-leaf-right var(--fl-speed) 1.9s backwards;
-}
-
-.flower--2 .flower__line__leaf--2 {
-  animation: blooming-leaf-right var(--fl-speed) 1.7s backwards;
-}
-
-.flower--2 .flower__line__leaf--3 {
-  animation: blooming-leaf-left var(--fl-speed) 1.5s backwards;
-}
-
-.flower--2 .flower__line__leaf--4 {
-  animation: blooming-leaf-left var(--fl-speed) 1.3s backwards;
-}
-
-.flower--3 {
-  left: 50%;
-  transform: rotate(-15deg);
-  animation: moving-flower-3 4s linear infinite;
-}
-
-.flower--3 .flower__line {
-  animation-delay: 0.9s;
-}
-
-.flower--3 .flower__line__leaf--1 {
-  animation: blooming-leaf-right var(--fl-speed) 2.5s backwards;
-}
-
-.flower--3 .flower__line__leaf--2 {
-  animation: blooming-leaf-right var(--fl-speed) 2.3s backwards;
-}
-
-.flower--3 .flower__line__leaf--3 {
-  animation: blooming-leaf-left var(--fl-speed) 2.1s backwards;
-}
-
-.flower--3 .flower__line__leaf--4 {
-  animation: blooming-leaf-left var(--fl-speed) 1.9s backwards;
-}
-
-.flower--4 {
-  left: -25%;
-  z-index: -6;
-  transform: rotate(10deg);
-  animation: moving-flower-4 3.5s linear infinite;
-}
-
-.flower--4 .flower__line {
-  height: 90vmin;
-  animation-delay: 1.2s;
-}
-
-.flower--4 .flower__line__leaf--1 {
-  animation: blooming-leaf-right var(--fl-speed) 2.8s backwards;
-}
-
-.flower--4 .flower__line__leaf--2 {
-  animation: blooming-leaf-right var(--fl-speed) 2.6s backwards;
-}
-
-.flower--4 .flower__line__leaf--3 {
-  animation: blooming-leaf-left var(--fl-speed) 2.4s backwards;
-}
-
-.flower--4 .flower__line__leaf--4 {
-  animation: blooming-leaf-left var(--fl-speed) 2.2s backwards;
-}
-
-.flower--5 {
-  left: 75%;
-  z-index: -7;
-  transform: rotate(-25deg);
-  animation: moving-flower-5 4.5s linear infinite;
-}
-
-.flower--5 .flower__line {
-  height: 85vmin;
-  animation-delay: 1.9s;
-}
-
-.flower--5 .flower__line__leaf--1 {
-  animation: blooming-leaf-right var(--fl-speed) 2.7s backwards;
-}
-
-.flower--5 .flower__line__leaf--2 {
-  animation: blooming-leaf-right var(--fl-speed) 2.5s backwards;
-}
-
-.flower--5 .flower__line__leaf--3 {
-  animation: blooming-leaf-left var(--fl-speed) 2.3s backwards;
-}
-
-.flower--5 .flower__line__leaf--4 {
-  animation: blooming-leaf-left var(--fl-speed) 2.1s backwards;
-}
-
-.flower__leafs {
-  position: relative;
-  animation: blooming-flower 2s backwards;
-}
-
-.flower__leafs--1 {
-  animation-delay: 1.1s;
-}
-
-.flower__leafs--2 {
-  animation-delay: 1.4s;
-}
-
-.flower__leafs--3 {
-  animation-delay: 1.7s;
-}
-
-.flower__leafs--4 {
-  animation-delay: 2.0s;
-}
-
-.flower__leafs--5 {
-  animation-delay: 2.0s;
-}
-
-.flower__leafs::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -100%);
-  width: 8vmin;
-  height: 8vmin;
-  background-color: #6bf0ff;
-  filter: blur(10vmin);
-}
-
-.flower__leaf {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 23vmin;
-  height: 6vmin;
-  border-radius: 60% 40% 60% 40%;
-  background-color: #ffd700;
-  background-image: linear-gradient(to top, #ff8c00, #ffd700, #ffff00);
-  transform-origin: bottom center;
-  opacity: 0.95;
-  box-shadow: inset 0 0 1vmin rgba(255, 255, 255, 0.7), 
-              0 0 3vmin rgba(255, 215, 0, 0.4);
-  z-index: 2;
-}
-
-.flower__leaf--1 {
-  transform: translate(-50%, -10%) rotate(-45deg);
-}
-
-.flower__leaf--2 {
-  transform: translate(-50%, -10%) rotate(-15deg);
-}
-
-.flower__leaf--3 {
-  transform: translate(-50%, -10%) rotate(15deg);
-}
-
-.flower__leaf--4 {
-  transform: translate(-50%, -10%) rotate(45deg);
-}
-
-.flower__white-circle {
-  position: absolute;
-  left: -4vmin;
-  top: -4vmin;
-  width: 10vmin;
-  height: 10vmin;
-  border-radius: 50%;
-  background-color: #8b4513;
-  background-image: radial-gradient(circle at 30% 30%, #654321, #8b4513, #2f1b14);
-  box-shadow: inset 0 0 2vmin rgba(0, 0, 0, 0.8),
-              0 0 1vmin rgba(139, 69, 19, 0.6);
-}
-
-.flower__white-circle::after {
-  content: "";
-  position: absolute;
-  left: 46%;
-  top: 31%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  z-index: 3;
-  border-radius: inherit;
-  background-image: repeating-conic-gradient(
-      from 0deg,
-      #2f1b14 0deg 15deg,
-      #654321 15deg 30deg
-    ),
-    radial-gradient(circle at center, #8b4513, #654321);
-}
-
-.flower__line {
-  height: 55vmin;
-  width: 2vmin;
-  background-image: linear-gradient(
-      to left,
-      rgb(0, 0, 0, 0.3),
-      transparent,
-      rgba(255, 255, 255, 0.2)
-    ),
-    linear-gradient(to top, transparent 10%, #2d5016, #4a7c23, #6b8e23);
-  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.7);
-  animation: grow-flower-tree 4s backwards;
-}
-
-.flower__line__leaf {
-  --w: 8vmin;
-  --h: calc(var(--w) + 3vmin);
-  position: absolute;
-  top: 20%;
-  left: 90%;
-  width: var(--w);
-  height: var(--h);
-  border-top-right-radius: var(--h);
-  border-bottom-left-radius: var(--h);
-  background-image: linear-gradient(
-    to top,
-    rgba(45, 80, 22, 0.6),
-    #4a7c23,
-    #6b8e23
-  );
-  box-shadow: inset 0 0 1vmin rgba(0, 0, 0, 0.3);
-}
-
-.flower__line__leaf--1 {
-  transform: rotate(70deg) rotateY(30deg);
-}
-
-.flower__line__leaf--2 {
-  top: 45%;
-  transform: rotate(70deg) rotateY(30deg);
-}
-
-.flower__line__leaf--3,
-.flower__line__leaf--4{
-  border-top-right-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-left-radius: var(--h);
-  border-bottom-right-radius: var(--h);
-  left: -460%;
-  top: 12%;
-  transform: rotate(-70deg) rotateY(30deg);
-}
-
-.flower__line__leaf--4 {
-  top: 40%;
-}
-
-.flower__light {
-  position: absolute;
-  bottom: 0vmin;
-  width: 0.8vmin;
-  height: 0.8vmin;
-  background-color: #8b4513;
-  border-radius: 50%;
-  filter: blur(0.1vmin);
-  animation: sunflower-seeds 6s linear infinite backwards;
-  box-shadow: 0 0 1vmin rgba(139, 69, 19, 0.8);
-}
-
-.flower__light:nth-child(odd) {
-  background-color: #654321;
-}
-
-.flower__light--1 { left: -2vmin; animation-delay: 1s; }
-.flower__light--2 { left: 3vmin; animation-delay: 0.5s; }
-.flower__light--3 { left: -6vmin; animation-delay: 0.3s; }
-.flower__light--4 { left: 6vmin; animation-delay: 0.9s; }
-.flower__light--5 { left: -1vmin; animation-delay: 1.5s; }
-.flower__light--6 { left: -4vmin; animation-delay: 3s; }
-.flower__light--7 { left: 3vmin; animation-delay: 2s; }
-.flower__light--8 { left: -6vmin; animation-delay: 3.5s; }
-
-.flower__grass {
-  --c: #4a7c23;
-  --line-w: 2vmin;
-  position: absolute;
-  bottom: 12vmin;
-  left: -7vmin;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  z-index: 20;
-  transform-origin: bottom center;
-  transform: rotate(-48deg) rotateY(40deg);
-}
-
-.flower__grass--1 {
-  animation: moving-grass 2s linear infinite;
-}
-
-.flower__grass--2 {
-  left: 2vmin;
-  bottom: 10vmin;
-  transform: scale(0.5) rotate(75deg) rotateX(10deg) rotateY(-200deg);
-  opacity: 0.8;
-  z-index: 0;
-  animation: moving-grass--2 1.5s linear infinite;
-}
-
-.flower__grass--3 {
-  left: -25vmin;
-  bottom: 8vmin;
-  transform: scale(0.7) rotate(-30deg) rotateY(45deg);
-  opacity: 0.9;
-  z-index: 15;
-  animation: moving-grass--3 2.2s linear infinite;
-}
-
-.flower__grass--4 {
-  left: -35vmin;
-  bottom: 15vmin;
-  transform: scale(0.4) rotate(60deg) rotateX(15deg) rotateY(-180deg);
-  opacity: 0.7;
-  z-index: 5;
-  animation: moving-grass--4 1.8s linear infinite;
-}
-
-.flower__grass--5 {
-  left: -18vmin;
-  bottom: 6vmin;
-  transform: scale(0.6) rotate(-60deg) rotateY(60deg);
-  opacity: 0.85;
-  z-index: 12;
-  animation: moving-grass--5 2.5s linear infinite;
-}
-
-.flower__grass--6 {
-  left: 25vmin;
-  bottom: 9vmin;
-  transform: scale(0.65) rotate(35deg) rotateY(-45deg);
-  opacity: 0.9;
-  z-index: 15;
-  animation: moving-grass--6 2.3s linear infinite;
-}
-
-.flower__grass--7 {
-  left: 35vmin;
-  bottom: 14vmin;
-  transform: scale(0.45) rotate(-70deg) rotateX(20deg) rotateY(170deg);
-  opacity: 0.75;
-  z-index: 8;
-  animation: moving-grass--7 1.9s linear infinite;
-}
-
-.flower__grass--8 {
-  left: 18vmin;
-  bottom: 5vmin;
-  transform: scale(0.55) rotate(50deg) rotateY(-70deg);
-  opacity: 0.8;
-  z-index: 10;
-  animation: moving-grass--8 2.1s linear infinite;
-}
-
-.flower__grass--9 {
-  left: -45vmin;
-  bottom: 20vmin;
-  transform: scale(0.3) rotate(20deg) rotateY(90deg);
-  opacity: 0.6;
-  z-index: 2;
-  animation: moving-grass--9 1.6s linear infinite;
-}
-
-.flower__grass--10 {
-  left: 42vmin;
-  bottom: 18vmin;
-  transform: scale(0.35) rotate(-45deg) rotateY(-120deg);
-  opacity: 0.65;
-  z-index: 3;
-  animation: moving-grass--10 2.0s linear infinite;
-}
-
-.flower__grass--top {
-  width: 7vmin;
-  height: 10vmin;
-  border-top-right-radius: 100%;
-  border-right: var(--line-w) solid var(--c);
-  transform-origin: bottom center;
-  transform: rotate(-2deg);
-}
-
-.flower__grass--bottom {
-  margin-top: -2px;
-  width: var(--line-w);
-  height: 25vmin;
-  background-image: linear-gradient(to top, transparent, var(--c));
-}
-
-.flower__grass__leaf {
-  --size: 10vmin;
-  position: absolute;
-  width: calc(var(--size) * 2.1);
-  height: var(--size);
-  border-top-left-radius: var(--size);
-  border-top-right-radius: var(--size);
-  background-image: linear-gradient(
-    to top,
-    transparent,
-    transparent 30%,
-    var(--c)
-  );
-  z-index: 100;
-}
-
-.flower__grass__leaf--1 {
-  top: -6%;
-  left: 30%;
-  --size: 6vmin;
-  transform: rotate(-20deg);
-  animation: growing-grass-ans--1 var(--speed-leaf) 2.6s backwards;
-}
-
-.flower__grass__leaf--2 {
-  top: -5%;
-  left: -110%;
-  --size: 6vmin;
-  transform: rotate(10deg);
-  animation: growing-grass-ans--2 var(--speed-leaf) 2.4s linear backwards;
-}
-
-.flower__grass__leaf--3 {
-  top: 5%;
-  left: 60%;
-  --size: 8vmin;
-  transform: rotate(-18deg) rotateX(-20deg);
-  animation: growing-grass-ans--3 var(--speed-leaf) 2.2s linear backwards;
-}
-
-.flower__grass__leaf--4 {
-  top: 6%;
-  left: -135%;
-  --size: 8vmin;
-  transform: rotate(2deg);
-  animation: growing-grass-ans--4 var(--speed-leaf) 2s linear backwards;
-}
-
-.flower__grass__leaf--5 {
-  top: 20%;
-  left: 60%;
-  --size: 10vmin;
-  transform: rotate(-24deg) rotateX(-20deg);
-  animation: growing-grass-ans--5 var(--speed-leaf) 1.8s linear backwards;
-}
-
-.flower__grass__leaf--6 {
-  top: 22%;
-  left: -180%;
-  --size: 10vmin;
-  transform: rotate(10deg);
-  animation: growing-grass-ans--6 var(--speed-leaf) 1.6s linear backwards;
-}
-
-.flower__grass__leaf--7 {
-  top: 39%;
-  left: 70%;
-  --size: 10vmin;
-  transform: rotate(-10deg);
-  animation: growing-grass-ans--7 var(--speed-leaf) 1.4s linear backwards;
-}
-
-.flower__grass__leaf--8 {
-  top: 40%;
-  left: -215%;
-  --size: 11vmin;
-  transform: rotate(10deg);
-  animation: growing-grass-ans--8 var(--speed-leaf) 1.2s linear backwards;
-}
-
-.flower__grass__overlay {
-  position: absolute;
-  top: -10%;
-  right: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  filter: blur(1.5vmin);
-  z-index: 100;
-}
-
-/* Resto de elementos simplificados */
-.grow-ans {
-  animation: grow-ans 2s var(--d) backwards;
-}
-
-.growing-grass {
-  animation: growing-grass-ans 1s 2s backwards;
-}
-
-.not-loaded * {
-  animation-play-state: paused !important;
-}
-
-/* KEYFRAMES */
-@keyframes grow-ans {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-
-@keyframes growing-grass-ans {
-  0% {
-    transform: scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--1 {
-  0% {
-    transform-origin: bottom left;
-    transform: rotate(-20deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--2 {
-  0% {
-    transform-origin: bottom right;
-    transform: rotate(10deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--3 {
-  0% {
-    transform-origin: bottom left;
-    transform: rotate(-18deg) rotateX(-20deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--4 {
-  0% {
-    transform-origin: bottom right;
-    transform: rotate(2deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--5 {
-  0% {
-    transform-origin: bottom left;
-    transform: rotate(-24deg) rotateX(-20deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--6 {
-  0% {
-    transform-origin: bottom right;
-    transform: rotate(10deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--7 {
-  0% {
-    transform-origin: bottom left;
-    transform: rotate(-10deg) scale(0);
-  }
-}
-
-@keyframes growing-grass-ans--8 {
-  0% {
-    transform-origin: bottom right;
-    transform: rotate(10deg) scale(0);
-  }
-}
-
-@keyframes sunflower-seeds {
-  0% {
-    opacity: 0;
-    transform: translateY(0vmin) rotate(0deg);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-3vmin) translateX(-1vmin) rotate(45deg);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-8vmin) translateX(1vmin) rotate(90deg);
-  }
-  60% {
-    transform: translateY(-12vmin) translateX(-1vmin) rotate(135deg);
-  }
-  80% {
-    transform: translateY(-16vmin) translateX(2vmin) rotate(180deg);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-25vmin) rotate(225deg);
-    opacity: 0;
-  }
-}
-
-@keyframes moving-flower-1 {
-  0%, 100% { transform: rotate(2deg); }
-  50% { transform: rotate(-2deg); }
-}
-
-@keyframes moving-flower-2 {
-  0%, 100% { transform: rotate(18deg); }
-  50% { transform: rotate(14deg); }
-}
-
-@keyframes moving-flower-3 {
-  0%, 100% { transform: rotate(-18deg); }
-  50% { transform: rotate(-20deg) rotateY(-10deg); }
-}
-
-@keyframes moving-flower-4 {
-  0%, 100% { transform: rotate(9deg); }
-  50% { transform: rotate(12deg) rotateY(9deg); }
-}
-
-@keyframes moving-flower-5 {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(-11deg) rotateY(5deg); }
-}
-
-@keyframes blooming-leaf-right {
-  0% {
-    transform-origin: left;
-    transform: rotate(70deg) rotateY(30deg) scale(0);
-  }
-}
-
-@keyframes blooming-leaf-left {
-  0% {
-    transform-origin: right;
-    transform: rotate(-70deg) rotateY(30deg) scale(0);
-  }
-}
-
-@keyframes grow-flower-tree {
-  0% {
-    height: 0;
-    border-radius: 1vmin;
-  }
-}
-
-@keyframes blooming-flower {
-  0% {
-    transform: scale(0);
-  }
-}
-
-@keyframes moving-grass {
-  0%, 100% { transform: rotate(-48deg) rotateY(40deg); }
-  50% { transform: rotate(-50deg) rotateY(40deg); }
-}
-
-@keyframes moving-grass--2 {
-  0%, 100% { transform: scale(0.5) rotate(75deg) rotateX(10deg) rotateY(-200deg); }
-  50% { transform: scale(0.5) rotate(79deg) rotateX(10deg) rotateY(-200deg); }
-}
-
-/* Animaciones para hierba adicional */
-@keyframes moving-grass--3 {
-  0%, 100% { transform: scale(0.7) rotate(-30deg) rotateY(45deg); }
-  50% { transform: scale(0.7) rotate(-33deg) rotateY(50deg); }
-}
-
-@keyframes moving-grass--4 {
-  0%, 100% { transform: scale(0.4) rotate(60deg) rotateX(15deg) rotateY(-180deg); }
-  50% { transform: scale(0.4) rotate(63deg) rotateX(18deg) rotateY(-175deg); }
-}
-
-@keyframes moving-grass--5 {
-  0%, 100% { transform: scale(0.6) rotate(-60deg) rotateY(60deg); }
-  50% { transform: scale(0.6) rotate(-57deg) rotateY(65deg); }
-}
-
-@keyframes moving-grass--6 {
-  0%, 100% { transform: scale(0.65) rotate(35deg) rotateY(-45deg); }
-  50% { transform: scale(0.65) rotate(38deg) rotateY(-40deg); }
-}
-
-@keyframes moving-grass--7 {
-  0%, 100% { transform: scale(0.45) rotate(-70deg) rotateX(20deg) rotateY(170deg); }
-  50% { transform: scale(0.45) rotate(-67deg) rotateX(23deg) rotateY(175deg); }
-}
-
-@keyframes moving-grass--8 {
-  0%, 100% { transform: scale(0.55) rotate(50deg) rotateY(-70deg); }
-  50% { transform: scale(0.55) rotate(53deg) rotateY(-65deg); }
-}
-
-@keyframes moving-grass--9 {
-  0%, 100% { transform: scale(0.3) rotate(20deg) rotateY(90deg); }
-  50% { transform: scale(0.3) rotate(23deg) rotateY(95deg); }
-}
-
-@keyframes moving-grass--10 {
-  0%, 100% { transform: scale(0.35) rotate(-45deg) rotateY(-120deg); }
-  50% { transform: scale(0.35) rotate(-42deg) rotateY(-115deg); }
-}
+        body { margin: 0; } /* Elimino los márgenes del body */
+        canvas { display: block; } /* Configuro el canvas como bloque */
     </style>
 </head>
-<body class="not-loaded">
-  <div class="night"></div>
-  
-  <div class="shooting-stars">
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-    <div class="shooting-star"></div>
-  </div>
-  
-  <div class="flowers">
-    <div class="flower flower--1">
-      <div class="flower__leafs flower__leafs--1">
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(0deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(30deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(60deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(90deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(120deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(150deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(180deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(210deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(240deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(270deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(300deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(330deg);"></div>
-        <div class="flower__white-circle"></div>
+<body>
+    <!-- Incluyo la biblioteca Three.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuro la escena, cámara y renderizador básicos
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-        <div class="flower__light flower__light--1"></div>
-        <div class="flower__light flower__light--2"></div>
-        <div class="flower__light flower__light--3"></div>
-        <div class="flower__light flower__light--4"></div>
-        <div class="flower__light flower__light--5"></div>
-        <div class="flower__light flower__light--6"></div>
-        <div class="flower__light flower__light--7"></div>
-        <div class="flower__light flower__light--8"></div>
-      </div>
-      <div class="flower__line">
-        <div class="flower__line__leaf flower__line__leaf--1"></div>
-        <div class="flower__line__leaf flower__line__leaf--2"></div>
-        <div class="flower__line__leaf flower__line__leaf--3"></div>
-        <div class="flower__line__leaf flower__line__leaf--4"></div>
-      </div>
-    </div>
+        // Establezco el fondo negro para la escena
+        scene.background = new THREE.Color(0x000000);
 
-    <div class="flower flower--2">
-      <div class="flower__leafs flower__leafs--2">
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(0deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(30deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(60deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(90deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(120deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(150deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(180deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(210deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(240deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(270deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(300deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(330deg);"></div>
-        <div class="flower__white-circle"></div>
+        // Creo la geometría del árbol con forma de cono
+        const segments = 32;
+        const treeGeometry = new THREE.ConeGeometry(2.5, 7, segments);
+        const positionAttribute = treeGeometry.attributes.position;
 
-        <div class="flower__light flower__light--1"></div>
-        <div class="flower__light flower__light--2"></div>
-        <div class="flower__light flower__light--3"></div>
-        <div class="flower__light flower__light--4"></div>
-        <div class="flower__light flower__light--5"></div>
-        <div class="flower__light flower__light--6"></div>
-        <div class="flower__light flower__light--7"></div>
-        <div class="flower__light flower__light--8"></div>
-      </div>
-      <div class="flower__line">
-        <div class="flower__line__leaf flower__line__leaf--1"></div>
-        <div class="flower__line__leaf flower__line__leaf--2"></div>
-        <div class="flower__line__leaf flower__line__leaf--3"></div>
-        <div class="flower__line__leaf flower__line__leaf--4"></div>
-      </div>
-    </div>
+        // Añado irregularidades sutiles al árbol para hacerlo más realista
+        for (let i = 0; i < positionAttribute.count; i++) {
+            const x = positionAttribute.getX(i);
+            const y = positionAttribute.getY(i);
+            const z = positionAttribute.getZ(i);
+            
+            if (y < 3.4) {
+                positionAttribute.setX(i, x + (Math.random() - 0.5) * 0.15);
+                positionAttribute.setZ(i, z + (Math.random() - 0.5) * 0.15);
+            }
+        }
 
-    <div class="flower flower--3">
-      <div class="flower__leafs flower__leafs--3">
-        <!-- Pétalos exteriores -->
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(0deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(30deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(60deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(90deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(120deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(150deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(180deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(210deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(240deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(270deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(300deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(330deg);"></div>
-        <div class="flower__white-circle"></div>
+        // Configuro el material del árbol con texturas y efectos
+        const treeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x1a472a,  // Verde oscuro natural
+            shininess: 3,
+            roughness: 1,
+            transparent: true,
+            opacity: 0.98,
+            // Cargo texturas para dar realismo al árbol
+            map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/terrain/grasslight-big.jpg'),
+            normalMap: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/terrain/grasslight-big-nm.jpg'),
+            displacementMap: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/terrain/grasslight-big-nm.jpg'),
+            displacementScale: 0.1,
+            displacementBias: -0.03
+        });
 
-        <div class="flower__light flower__light--1"></div>
-        <div class="flower__light flower__light--2"></div>
-        <div class="flower__light flower__light--3"></div>
-        <div class="flower__light flower__light--4"></div>
-        <div class="flower__light flower__light--5"></div>
-        <div class="flower__light flower__light--6"></div>
-        <div class="flower__light flower__light--7"></div>
-        <div class="flower__light flower__light--8"></div>
-      </div>
-      <div class="flower__line">
-        <div class="flower__line__leaf flower__line__leaf--1"></div>
-        <div class="flower__line__leaf flower__line__leaf--2"></div>
-        <div class="flower__line__leaf flower__line__leaf--3"></div>
-        <div class="flower__line__leaf flower__line__leaf--4"></div>
-      </div>
-    </div>
-    
-    <div class="flower flower--4">
-      <div class="flower__leafs flower__leafs--4">
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(0deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(30deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(60deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(90deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(120deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(150deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(180deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(210deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(240deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(270deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(300deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(330deg);"></div>
-        <div class="flower__white-circle"></div>
+        // Creo el mesh del árbol y lo añado a un grupo
+        const tree = new THREE.Mesh(treeGeometry, treeMaterial);
+        const treeGroup = new THREE.Group();
+        scene.add(treeGroup);
+        treeGroup.add(tree);
 
-        <div class="flower__light flower__light--1"></div>
-        <div class="flower__light flower__light--2"></div>
-        <div class="flower__light flower__light--3"></div>
-        <div class="flower__light flower__light--4"></div>
-        <div class="flower__light flower__light--5"></div>
-        <div class="flower__light flower__light--6"></div>
-        <div class="flower__light flower__light--7"></div>
-        <div class="flower__light flower__light--8"></div>
-      </div>
-      <div class="flower__line">
-        <div class="flower__line__leaf flower__line__leaf--1"></div>
-        <div class="flower__line__leaf flower__line__leaf--2"></div>
-        <div class="flower__line__leaf flower__line__leaf--3"></div>
-        <div class="flower__line__leaf flower__line__leaf--4"></div>
-      </div>
-    </div>
+        // Defino la geometría y materiales para los adornos
+        const ornamentGeometry = new THREE.SphereGeometry(0.15, 32, 32);
+        const ornamentMaterials = [
+            // Material rojo brillante
+            new THREE.MeshPhongMaterial({ 
+                color: 0xff0000,
+                shininess: 150,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
+            }),
+            // Material azul brillante
+            new THREE.MeshPhongMaterial({ 
+                color: 0x00ffff,
+                shininess: 150,
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
+            }),
+            // Material blanco brillante
+            new THREE.MeshPhongMaterial({ 
+                color: 0xffffff,
+                shininess: 150,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
+            }),
+            // Material fucsia brillante
+            new THREE.MeshPhongMaterial({ 
+                color: 0xFF1493,
+                shininess: 150,
+                emissive: 0xFF1493,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
+            })
+        ];
 
-    <div class="flower flower--5">
-      <div class="flower__leafs flower__leafs--5">
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(0deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(30deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(60deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(90deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(120deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(150deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(180deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(210deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(240deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(270deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(300deg);"></div>
-        <div class="flower__leaf" style="transform: translate(-50%, -10%) rotate(330deg);"></div>
-        <div class="flower__white-circle"></div>
+        // Función para crear y distribuir los adornos en el árbol
+        function createOrnaments() {
+            const ornaments = [];
+            const levels = 8; 
+            
+            // Patrones actualizados incluyendo el color fucsia ('pink')
+            const levelPatterns = [
+                ['white', 'red', 'blue', 'pink'], // Superior
+                ['red', 'blue', 'white', 'pink', 'red'],
+                ['blue', 'pink', 'red', 'white', 'blue', 'pink'],
+                ['pink', 'white', 'blue', 'red', 'pink', 'white'],
+                ['red', 'blue', 'pink', 'white', 'red', 'blue', 'pink'],
+                ['blue', 'pink', 'white', 'red', 'blue', 'pink', 'white'],
+                ['pink', 'red', 'blue', 'white', 'pink', 'red', 'blue'],
+                ['white', 'pink', 'red', 'blue', 'white', 'pink', 'red', 'blue'] // Inferior
+            ];
 
-        <div class="flower__light flower__light--1"></div>
-        <div class="flower__light flower__light--2"></div>
-        <div class="flower__light flower__light--3"></div>
-        <div class="flower__light flower__light--4"></div>
-        <div class="flower__light flower__light--5"></div>
-        <div class="flower__light flower__light--6"></div>
-        <div class="flower__light flower__light--7"></div>
-        <div class="flower__light flower__light--8"></div>
-      </div>
-      <div class="flower__line">
-        <div class="flower__line__leaf flower__line__leaf--1"></div>
-        <div class="flower__line__leaf flower__line__leaf--2"></div>
-        <div class="flower__line__leaf flower__line__leaf--3"></div>
-        <div class="flower__line__leaf flower__line__leaf--4"></div>
-      </div>
-    </div>
+            for(let level = 0; level < levels; level++) {
+                const y = 3 - (level * 0.85); // Ajuste del espaciado vertical
+                const pattern = levelPatterns[level];
+                const radius = 0.4 + (level * 0.35); 
+                
+                for(let i = 0; i < pattern.length; i++) {
+                    let materialIndex;
+                    switch(pattern[i]) {
+                        case 'red': materialIndex = 0; break;
+                        case 'blue': materialIndex = 1; break;
+                        case 'white': materialIndex = 2; break;
+                        case 'pink': materialIndex = 3; break;
+                    }
+                    
+                    const ornament = new THREE.Mesh(ornamentGeometry, ornamentMaterials[materialIndex]);
+                    
+                    const angle = (i / pattern.length) * Math.PI * 2 + (level % 2 ? 0 : Math.PI / pattern.length);
+                    
+                    ornament.position.set(
+                        radius * Math.cos(angle),
+                        y,
+                        radius * Math.sin(angle)
+                    );
+                    
+                    ornament.lookAt(new THREE.Vector3(0, y, 0));
+                    
+                    const ornamentLight = new THREE.PointLight(
+                        ornamentMaterials[materialIndex].color,
+                        0.4,  // Aumentado de 0.3 a 0.4
+                        0.6   // Aumentado de 0.4 a 0.6
+                    );
+                    ornamentLight.position.copy(ornament.position);
+                    
+                    treeGroup.add(ornament);
+                    treeGroup.add(ornamentLight);
+                    ornaments.push(ornament);
+                }
+            }
+            return ornaments;
+        }
 
-    <div class="grow-ans" style="--d:1.2s">
-      <div class="flower__g-long">
-        <div class="flower__g-long__top"></div>
-        <div class="flower__g-long__bottom"></div>
-      </div>
-    </div>
+        // Creo los adornos
+        const ornaments = createOrnaments();
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--1">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--6"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--7"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--8"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Función para crear la estrella en la punta del árbol
+        function createStar() {
+            const starShape = new THREE.Shape();
+            const points = 5;
+            const outerRadius = 0.5;
+            const innerRadius = 0.2;
+            
+            for(let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (i / (points * 2)) * Math.PI * 2;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                
+                if(i === 0) starShape.moveTo(x, y);
+                else starShape.lineTo(x, y);
+            }
+            
+            const geometry = new THREE.ExtrudeGeometry(starShape, {
+                depth: 0.1,
+                bevelEnabled: true,
+                bevelThickness: 0.05,
+                bevelSize: 0.02,
+                bevelSegments: 3
+            });
+            
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,
+                emissive: 0xFFD700,
+                emissiveIntensity: 0.6,
+                shininess: 100,
+                metalness: 0.5
+            });
+            
+            const star = new THREE.Mesh(geometry, material);
+            
+            // Añadir luz a la estrella
+            const starLight = new THREE.PointLight(0xFFD700, 2, 3);
+            star.add(starLight);
+            
+            star.rotation.z = Math.PI / 2;
+            return star;
+        }
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--2">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--6"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--7"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--8"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Coloco la estrella en la punta del árbol
+        const star = createStar();
+        star.position.y = 4;
+        treeGroup.add(star);
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--3">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--6"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Añado luces alrededor del árbol
+        const colors = [0xff0000, 0x00ffff, 0xffffff, 0xFFD700];
+        for(let i = 0; i < 20; i++) {
+            const light = new THREE.PointLight(colors[i % colors.length], 0.5, 2.0); // Aumentado intensidad y rango
+            const angle = (i / 20) * Math.PI * 2;
+            const height = (i / 20) * 5 - 2;
+            const radius = 1.8;
+            
+            light.position.set(
+                radius * Math.cos(angle),
+                height,
+                radius * Math.sin(angle)
+            );
+            treeGroup.add(light);
+        }
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--4">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Configuro la iluminación general de la escena
+        const mainLight = new THREE.SpotLight(0xFFFFFF, 0.8);
+        mainLight.position.set(10, 10, 10);
+        mainLight.angle = Math.PI / 4;
+        mainLight.penumbra = 0.2;
+        mainLight.decay = 1.5;
+        mainLight.distance = 150;
+        scene.add(mainLight);
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--5">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Añado luz ambiental para iluminación general
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+        scene.add(ambientLight);
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--6">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--6"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Posiciono la cámara
+        camera.position.z = 10;
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--7">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Configuro el control interactivo con el mouse y touch
+        let isDragging = false;
+        let previousX = 0;
+        let previousY = 0;
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--8">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--4"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--5"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        // Eventos para interacción con mouse
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousX = e.clientX;
+            previousY = e.clientY;
+        });
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--9">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
 
-    <div class="growing-grass">
-      <div class="flower__grass flower__grass--10">
-        <div class="flower__grass--top"></div>
-        <div class="flower__grass--bottom"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--1"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--2"></div>
-        <div class="flower__grass__leaf flower__grass__leaf--3"></div>
-        <div class="flower__grass__overlay"></div>
-      </div>
-    </div>
-  </div>
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousX;
+                const deltaY = e.clientY - previousY;
+                
+                treeGroup.rotation.y += deltaX * 0.01;
+                treeGroup.rotation.x += deltaY * 0.01;
+                
+                previousX = e.clientX;
+                previousY = e.clientY;
+            }
+        });
 
-  <script>
-    onload = () => {
-      const c = setTimeout(() => {
-        document.body.classList.remove("not-loaded");
-        
-        function createShootingStar() {
-          const star = document.createElement('div');
-          star.className = 'shooting-star';
-          star.style.top = Math.random() * 60 + '%';
-          star.style.animationDelay = '0s';
-          star.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
-          
-          document.querySelector('.shooting-stars').appendChild(star);
-          
-          setTimeout(() => {
-            star.remove();
-          }, 4000);
+        // Eventos para interacción táctil
+        document.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            previousX = e.touches[0].clientX;
+            previousY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                const deltaX = e.touches[0].clientX - previousX;
+                const deltaY = e.touches[0].clientY - previousY;
+                
+                treeGroup.rotation.y += deltaX * 0.01;
+                treeGroup.rotation.x += deltaY * 0.01;
+                
+                previousX = e.touches[0].clientX;
+                previousY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        // Función para crear el efecto de nieve
+        function createSnow() {
+            const snowGeometry = new THREE.BufferGeometry();
+            const snowCount = 1500; // Aumentado para más densidad
+            const posArray = new Float32Array(snowCount * 3);
+            const velocityArray = new Float32Array(snowCount); // Array para velocidades individuales
+            const sizeArray = new Float32Array(snowCount);     // Array para tamaños variables
+            
+            for(let i = 0; i < snowCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 30;     // Área más amplia en X
+                posArray[i + 1] = Math.random() * 20;         // Altura
+                posArray[i + 2] = (Math.random() - 0.5) * 30; // Área más amplia en Z
+                
+                // Velocidad y tamaño aleatorios para cada copo
+                velocityArray[i/3] = 0.02 + Math.random() * 0.03;
+                sizeArray[i/3] = 0.05 + Math.random() * 0.15;
+            }
+            
+            snowGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            // Textura personalizada para los copos
+            const snowTexture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/snowflake2.png');
+            
+            const snowMaterial = new THREE.PointsMaterial({
+                size: 0.2,
+                map: snowTexture,
+                transparent: true,
+                opacity: 0.8,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                vertexColors: false
+            });
+            
+            const snow = new THREE.Points(snowGeometry, snowMaterial);
+            
+            // Función de animación específica para la nieve
+            function animateSnow() {
+                const positions = snow.geometry.attributes.position.array;
+                
+                for(let i = 0; i < positions.length; i += 3) {
+                    // Movimiento vertical
+                    positions[i + 1] -= velocityArray[i/3];
+                    
+                    // Movimiento ondulatorio horizontal
+                    positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                    positions[i + 2] += Math.cos(Date.now() * 0.001 + i) * 0.01;
+                    
+                    // Reiniciar posición cuando llega abajo
+                    if(positions[i + 1] < -5) {
+                        positions[i + 1] = 15;
+                        positions[i] = (Math.random() - 0.5) * 30;
+                        positions[i + 2] = (Math.random() - 0.5) * 30;
+                    }
+                }
+                
+                snow.geometry.attributes.position.needsUpdate = true;
+                requestAnimationFrame(animateSnow);
+            }
+            
+            animateSnow();
+            return snow;
+        }
+
+        // Añado el efecto de nieve a la escena
+        const snow = createSnow();
+        scene.add(snow);
+
+        // Función para crear partículas decorativas en el árbol
+        function createTreeParticles() {
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particleCount = 15000;
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for(let i = 0; i < particleCount * 3; i += 3) {
+                const height = Math.random() * 7;
+                const radiusMax = 2.8;
+                const radius = (radiusMax * (1 - Math.pow(height/7, 1.2))) + 0.1;
+                const angle = Math.random() * Math.PI * 2;
+                
+                const randomOffset = (Math.random() - 0.5) * 0.1;
+                
+                posArray[i] = Math.cos(angle) * radius + randomOffset;
+                posArray[i + 1] = height - 3.5;
+                posArray[i + 2] = Math.sin(angle) * radius + randomOffset;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.1,     // Reducido de 0.12 a 0.1
+                color: 0x45a049,
+                transparent: true,
+                opacity: 0.98,  // Aumentado de 0.95 a 0.98
+                map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/disc.png'),
+                alphaTest: 0.2,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+            
+            return new THREE.Points(particlesGeometry, particlesMaterial);
+        }
+
+        // Añado las partículas decorativas al árbol
+        const treeParticles = createTreeParticles();
+        treeGroup.add(treeParticles);
+
+        // Función principal de animación
+        function animate() {
+            requestAnimationFrame(animate);
+            // Animo la rotación del árbol y los efectos
+            treeGroup.rotation.y += 0.001;
+            
+            // Animar partículas del árbol
+            const treeParticlePositions = treeParticles.geometry.attributes.position.array;
+            for(let i = 0; i < treeParticlePositions.length; i += 3) {
+                const time = Date.now() * 0.0005;
+                const offset = i * 0.05;
+                
+                treeParticlePositions[i] += Math.sin(time + offset) * 0.001;
+                treeParticlePositions[i + 2] += Math.cos(time + offset) * 0.001;
+            }
+            treeParticles.geometry.attributes.position.needsUpdate = true;
+            
+            // Efecto de brillo pulsante en las luces
+            const time = Date.now() * 0.001;
+            treeGroup.children.forEach(child => {
+                if (child instanceof THREE.PointLight && child !== mainLight) {
+                    child.intensity = 0.3 + Math.sin(time + child.position.x) * 0.1;
+                }
+            });
+            
+            renderer.render(scene, camera);
         }
         
-        setInterval(() => {
-          if (Math.random() > 0.3) { 
-            createShootingStar();
-          }
-        }, Math.random() * 5000 + 3000);
-        clearTimeout(c);
-      }, 1000);
-    };
-  </script>
+        // Inicio la animación
+        animate();
+
+        // Manejo el redimensionamiento de la ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
